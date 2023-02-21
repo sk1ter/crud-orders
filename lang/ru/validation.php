@@ -212,5 +212,7 @@ return [
         'updated_at'               => 'обновлено в',
         'username'                 => 'никнейм',
         'year'                     => 'год',
+        'products'                 => 'продукты',
+        'order_date'               => 'дата заказа',
     ],
 ];

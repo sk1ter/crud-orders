@@ -79,6 +79,7 @@
                                             @endif
                                         </div>
                                     @endif
+                                    <x-input-error class="mt-2" :messages="$errors->get('products')"/>
                                 </div>
                             </div>
                             <div class="flex-1"></div>
@@ -88,16 +89,16 @@
                                 class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <th scope="col" class="px-6 py-3">
-                                    Product name
+                                    {{__('Product name')}}
                                 </th>
                                 <th scope="col" class="px-6 py-3">
-                                    Quantity
+                                    {{__('Quantity')}}
                                 </th>
                                 <th scope="col" class="px-6 py-3">
-                                    Price
+                                    {{__('Price')}}
                                 </th>
                                 <th scope="col" class="px-6 py-3">
-                                    Action
+                                    {{__('Action')}}
                                 </th>
                             </tr>
                             </thead>
