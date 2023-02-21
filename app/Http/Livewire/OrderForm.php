@@ -25,6 +25,8 @@ class OrderForm extends Component
 
     public $term = null;
 
+    public $update;
+
     protected $listeners = ['addProduct' => 'addProduct', 'quantityChange' => 'quantityChange'];
 
     protected $rules = [
@@ -58,7 +60,9 @@ class OrderForm extends Component
             $this->address_longitude = $this->order->address_longitude;
             $this->phone = $this->order->phone;
             $this->email = $this->order->email;
-            $this->products = $this->order->products->map(fn(Product $product) => [...$product->toArray(), 'quantity' => $product->pivot->quantity]);
+            if (empty($this->products)) {
+                $this->products = $this->order->products->map(fn(Product $product) => [...$product->toArray(), 'quantity' => $product->pivot->quantity]);
+            }
         }
     }
 
@@ -71,6 +75,7 @@ class OrderForm extends Component
     {
         if (mb_strlen($this->term) > 2) {
             $this->suggested_products = Product::where(DB::raw('lower(name)'), 'like', '%' . $this->term . '%')
+                ->whereNotIn('id', collect($this->products)->map(fn($product) => $product['id']))
                 ->limit(10)->get()->toArray();
         }
     }
@@ -85,7 +90,14 @@ class OrderForm extends Component
     {
         $product = Product::find($productId);
         if ($product !== null) {
-            $this->products = array_merge(is_array($this->products) ? $this->products : [], [$product]);
+            $product = $product->toArray();
+            $product['quantity'] = 0;
+            if ($this->products) {
+                $this->products[] = $product;
+            } else {
+                $this->products = [$product];
+            }
+
         }
     }
 
@@ -97,13 +109,17 @@ class OrderForm extends Component
     public function quantityChange($data)
     {
         $this->products = collect($this->products)->map(function ($product) use ($data) {
-            if ($product['id'] === $data['id']) {
-                $product = ['quantity' => $data['quantity'], ...$product];
-            } else {
-                $product['quantity'] = 0;
+            if ($product['id'] === (int) $data['id']) {
+                try {
+                    $product['quantity'] = $data['quantity'];
+                    return $product;
+                } catch (\Throwable) {
+
+                }
             }
             return $product;
         })->toArray();
+        $this->update = time();
     }
 
     /**
@@ -130,6 +146,11 @@ class OrderForm extends Component
         $this->address_longitude = $address_longitude;
     }
 
+    public function getOverallAmountProperty()
+    {
+        return collect($this->products)->reduce(fn($sum, $product) => $sum + ($product['price'] * $product['quantity']) / 100, 0);
+    }
+
     public function saveOrder()
     {
         $this->validate();
@@ -148,8 +169,8 @@ class OrderForm extends Component
             'email' => $this->email
         ]);
         $order->save();
+        $this->order->products()->detach();
         foreach ($this->products as $product) {
-            $this->order->products()->detach();
             $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
         }
         $this->redirect(route('dashboard'));

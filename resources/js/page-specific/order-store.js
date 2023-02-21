@@ -1,3 +1,4 @@
+
 const dateInput = document.getElementById('order_date');
 const phoneInput = document.getElementById('phone');
 const dateMaskOptions = {
@@ -21,7 +22,17 @@ const dateMaskOptions = {
     }
 };
 
-let a = window.IMask(dateInput, dateMaskOptions);
-let b = window.IMask(phoneInput, {
-    mask: '+7 (000) 000 00 00'
+function mask() {
+    let a = window.IMask(dateInput, dateMaskOptions);
+    let b = window.IMask(phoneInput, {
+        mask: '+7 (000) 000 00 00'
+    });
+}
+mask()
+document.addEventListener("DOMContentLoaded", () => {
+    Livewire.hook('element.updated', (el, component) => {
+        console.log('wtf')
+        mask()
+    })
 });
+

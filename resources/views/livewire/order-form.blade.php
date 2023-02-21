@@ -28,7 +28,7 @@
                                 <x-input-label for="email" :value="__('Email')"/>
                                 <x-text-input id="email" wire:model="email" name="phone" type="text"
                                               class="mt-1 block w-full"
-                                               autofocus autocomplete="off"/>
+                                              autofocus autocomplete="off"/>
                                 <x-input-error class="mt-2" :messages="$errors->get('email')"/>
                             </div>
                             <div>
@@ -112,22 +112,32 @@
                                             {{$product['name']}}
                                             <input type="hidden" name="product[id]" value="{{$product['id']}}">
                                         </th>
-                                        <th scope="row" wire: x-on:blur="$wire.emit('quantityChange', {id: {{$product['id']}}, quantity: $event.target.innerHTML})" contenteditable=""
+                                        <th scope="row" wire:
+                                            x-on:blur="$wire.emit('quantityChange', {id: {{$product['id']}}, quantity: $event.target.innerHTML})"
+                                            contenteditable=""
                                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                             {{$product['quantity'] ?? 0}}
                                         </th>
                                         <th scope="row"
                                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            {{$product['price']}}
+                                            {{number_format($product['price'] / 100)}}
                                         </th>
                                         <th scope="row"
                                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                             <button class="text-blue-600"
-                                               wire:click="deleteProduct({{$product['id']}})">[{{__('Delete')}}]</button>
+                                                    wire:click="deleteProduct({{$product['id']}})">[{{__('Delete')}}]
+                                            </button>
                                         </th>
                                     </tr>
-                                @endforeach
+                            @endforeach
                             @endif
+                            <tfoot>
+                            <tr class="font-semibold text-gray-900 dark:text-white">
+                                <th scope="row" class="px-6 py-3 text-base">{{__('Total')}}</th>
+                                {{--                                <td class="px-6 py-3">3</td>--}}
+                                <td colspan="2" class="px-6 py-3">{{$this->overall_amount}}</td>
+                            </tr>
+                            </tfoot>
                             </tbody>
                         </table>
                     </div>
@@ -146,23 +156,23 @@
     <script>
         document.addEventListener('livewire:load', function () {
             const that = @this;
-            let selected = [that.address_latitude ?? 55.72281362564907, that.address_longitude ?? 37.6300436401367]
             ymaps.ready(init);
+            let selected = [that.address_latitude ?? 55.72281362564907, that.address_longitude ?? 37.6300436401367]
 
             function init() {
-                var myPlacemark,
-                    myMap = new ymaps.Map('map', {
-                        center: selected,
-                        zoom: 10
-                    }, {
-                        searchControlProvider: 'yandex#search'
-                    });
+                let myPlacemark = createPlacemark(selected)
+                myMap = new ymaps.Map('map', {
+                    center: selected,
+                    zoom: 10
+                }, {
+                    searchControlProvider: 'yandex#search'
+                });
+                myMap.geoObjects.add(myPlacemark);
+                getAddress(myPlacemark.geometry.getCoordinates());
                 myMap.events.add('click', function (e) {
                     var coords = e.get('coords');
                     that.setAddressLatitude(coords[0] ?? "")
                     that.setAddressLongitude(coords[1] ?? "")
-                    // document.querySelector('#address_latitude').value = coords[0] ?? ""
-                    // document.querySelector('#address_longitude').value = coords[1] ?? ""
                     if (myPlacemark) {
                         myPlacemark.geometry.setCoordinates(coords);
                     } else {
