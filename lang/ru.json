@@ -81,5 +81,8 @@
     "Action": "Действие",
     "Orders": "Заказы",
     "Results": "Полученные результаты",
-    "Add order": "Добавить заказ"
+    "Add order": "Добавить заказ",
+    "Filter active": " ",
+    "Reset": "Сброс",
+    "Search in": "Искать в"
 }
