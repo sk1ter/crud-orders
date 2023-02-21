@@ -23,7 +23,7 @@ class OrdersTable extends LivewireDatatable
         return [
             NumberColumn::name('id')
                 ->label(__('ID'))
-                ->linkTo('job', 6),
+                ->linkTo('orders/update'),
             Column::name('email')
                 ->label(__('E-mail')),
             Column::name('phone')

@@ -4,5 +4,5 @@
             {{ __('Orders') }}
         </h2>
     </x-slot>
-    <livewire:create-order/>
+    <livewire:order-form/>
 </x-app-layout>

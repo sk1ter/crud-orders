@@ -19,9 +19,8 @@ class OrderController extends Controller
         return view('order.store');
     }
 
-    public function store(OrderRequest $request)
+    public function update(Order $id)
     {
-        $this->orderService->create($request);
-        return redirect(route('dashboard'));
+        return view('order.update', ['order' => $id]);
     }
 }

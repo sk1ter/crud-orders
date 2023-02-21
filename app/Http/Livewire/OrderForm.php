@@ -7,8 +7,11 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
-class CreateOrder extends Component
+class OrderForm extends Component
 {
+    /**
+     * @var Order
+     */
     public $order;
     public $order_date;
     public $products;
@@ -46,10 +49,22 @@ class CreateOrder extends Component
         return $attributes;
     }
 
+    public function mount()
+    {
+        if ($this->order) {
+            $this->address = $this->order->address;
+            $this->order_date = date('d.m.Y', strtotime($this->order->order_date));
+            $this->address_latitude = $this->order->address_latitude;
+            $this->address_longitude = $this->order->address_longitude;
+            $this->phone = $this->order->phone;
+            $this->email = $this->order->email;
+            $this->products = $this->order->products->map(fn(Product $product) => [...$product->toArray(), 'quantity' => $product->pivot->quantity]);
+        }
+    }
 
     public function render()
     {
-        return view('livewire.create-order');
+        return view('livewire.order-form');
     }
 
     public function search()
@@ -72,6 +87,11 @@ class CreateOrder extends Component
         if ($product !== null) {
             $this->products = array_merge(is_array($this->products) ? $this->products : [], [$product]);
         }
+    }
+
+    public function deleteProduct($productId)
+    {
+        $this->products = collect($this->products)->filter(fn($product) => $product['id'] !== (int) $productId);
     }
 
     public function quantityChange($data)
@@ -129,6 +149,7 @@ class CreateOrder extends Component
         ]);
         $order->save();
         foreach ($this->products as $product) {
+            $this->order->products()->detach();
             $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
         }
         $this->redirect(route('dashboard'));
